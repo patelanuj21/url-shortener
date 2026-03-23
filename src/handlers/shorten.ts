@@ -2,11 +2,7 @@ import { createRoute } from '@hono/zod-openapi'
 import { ShortenRequestSchema, ShortenResponseSchema, ErrorSchema } from '../schemas/urls'
 import { findByCode, createUrl } from '../db/queries'
 import type { OpenAPIHono } from '@hono/zod-openapi'
-
-type Bindings = {
-  DB: D1Database
-  WORKER_URL: string
-}
+import type { Bindings } from '../types'
 
 function generateShortCode(length = 6): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'

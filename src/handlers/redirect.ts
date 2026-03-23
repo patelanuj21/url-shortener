@@ -2,17 +2,14 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { ErrorSchema } from '../schemas/urls'
 import { findByCode, incrementClickCount } from '../db/queries'
 import type { OpenAPIHono } from '@hono/zod-openapi'
-
-type Bindings = {
-  DB: D1Database
-  WORKER_URL: string
-}
+import type { Bindings } from '../types'
 
 const route = createRoute({
   method: 'get',
   path: '/{code}',
   tags: ['Links'],
   summary: 'Redirect to original URL',
+  description: 'Returns a 302 redirect to the original URL and increments the click counter. Open directly in a browser — cannot be tested via Swagger UI due to CORS on the redirect destination.',
   request: {
     params: z.object({ code: z.string() }),
   },

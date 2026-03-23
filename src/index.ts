@@ -5,11 +5,7 @@ import { registerShorten } from './handlers/shorten'
 import { registerRedirect } from './handlers/redirect'
 import { registerStats } from './handlers/stats'
 import { registerDeleteLink } from './handlers/deleteLink'
-
-type Bindings = {
-  DB: D1Database
-  WORKER_URL: string
-}
+import type { Bindings } from './types'
 
 const app = new OpenAPIHono<{ Bindings: Bindings }>()
 
@@ -31,7 +27,9 @@ app.doc('/api/openapi.json', {
   info: {
     title: 'URL Shortener API',
     version: '1.0.0',
-    description: 'Serverless URL shortener built on Cloudflare Workers + D1',
+    description: `Serverless URL shortener built on Cloudflare Workers + D1.
+
+> **Note on \`GET /{code}\`:** This endpoint returns a 302 redirect and must be opened directly in a browser or tested with \`curl -L\`. Swagger UI cannot follow redirects to external domains due to browser CORS restrictions — the "Failed to fetch" message is expected behaviour, not a bug.`,
   },
 })
 

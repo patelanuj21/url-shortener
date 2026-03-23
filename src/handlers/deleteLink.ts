@@ -2,11 +2,7 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { ErrorSchema } from '../schemas/urls'
 import { deleteByCode } from '../db/queries'
 import type { OpenAPIHono } from '@hono/zod-openapi'
-
-type Bindings = {
-  DB: D1Database
-  WORKER_URL: string
-}
+import type { Bindings } from '../types'
 
 const route = createRoute({
   method: 'delete',
