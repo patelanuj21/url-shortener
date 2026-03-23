@@ -1,6 +1,7 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { requestLogger } from './middleware/logger'
+import { registerShorten } from './handlers/shorten'
 
 type Bindings = {
   DB: D1Database
@@ -10,6 +11,8 @@ type Bindings = {
 const app = new OpenAPIHono<{ Bindings: Bindings }>()
 
 app.use('*', requestLogger())
+
+registerShorten(app)
 
 // Health check
 app.get('/api/health', (c) => {
