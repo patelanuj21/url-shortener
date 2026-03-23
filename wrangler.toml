@@ -1,0 +1,20 @@
+name = "url-shortener"
+main = "src/index.ts"
+compatibility_date = "2025-03-22"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./frontend/dist"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "url-shortener-db"
+database_id = "b9a95f2d-9716-4622-ab36-c7a6728d5d27"
+
+[vars]
+WORKER_URL = "https://url-shortener.demos.anujpatel.net"
+
+[[routes]]
+pattern = "url-shortener.demos.anujpatel.net"
+custom_domain = true
