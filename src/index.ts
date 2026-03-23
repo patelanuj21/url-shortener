@@ -1,10 +1,11 @@
-import { OpenAPIHono } from '@hono/zod-openapi'
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { requestLogger } from './middleware/logger'
 import { registerShorten } from './handlers/shorten'
 import { registerRedirect } from './handlers/redirect'
 import { registerStats } from './handlers/stats'
 import { registerDeleteLink } from './handlers/deleteLink'
+import { HealthResponseSchema } from './schemas/urls'
 import type { Bindings } from './types'
 
 const app = new OpenAPIHono<{ Bindings: Bindings }>({
@@ -23,8 +24,19 @@ registerDeleteLink(app)
 registerRedirect(app)
 
 // Health check
-app.get('/api/health', (c) => {
-  return c.json({ message: 'URL Shortener API', status: 'ok', version: '0.1.0' })
+app.openapi(createRoute({
+  method: 'get',
+  path: '/api/health',
+  tags: ['System'],
+  summary: 'Health check',
+  responses: {
+    200: {
+      content: { 'application/json': { schema: HealthResponseSchema } },
+      description: 'Service is healthy',
+    },
+  },
+}), (c) => {
+  return c.json({ message: 'URL Shortener API', status: 'ok', version: '0.1.0' }, 200)
 })
 
 // OpenAPI spec

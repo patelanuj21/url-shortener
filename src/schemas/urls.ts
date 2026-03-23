@@ -29,3 +29,9 @@ export const ErrorSchema = z.object({
   error: z.string().openapi({ example: 'Short code not found' }),
   code: z.string().openapi({ example: 'NOT_FOUND' }),
 })
+
+export const HealthResponseSchema = z.object({
+  message: z.string().openapi({ example: 'URL Shortener API' }),
+  status: z.string().openapi({ example: 'ok' }),
+  version: z.string().openapi({ example: '0.1.0' }),
+})
