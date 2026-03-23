@@ -7,7 +7,13 @@ import { registerStats } from './handlers/stats'
 import { registerDeleteLink } from './handlers/deleteLink'
 import type { Bindings } from './types'
 
-const app = new OpenAPIHono<{ Bindings: Bindings }>()
+const app = new OpenAPIHono<{ Bindings: Bindings }>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return c.json({ error: 'Validation error', code: 'VALIDATION_ERROR' }, 422)
+    }
+  },
+})
 
 app.use('*', requestLogger())
 
