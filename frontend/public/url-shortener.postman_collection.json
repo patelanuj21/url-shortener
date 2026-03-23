@@ -1,0 +1,171 @@
+{
+  "info": {
+    "name": "URL Shortener API",
+    "description": "Serverless URL shortener built on Cloudflare Workers + D1.\n\nSet the `base_url` variable to target local or production:\n- Local: `http://localhost:8787`\n- Production: your deployed Worker URL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8787",
+      "type": "string"
+    },
+    {
+      "key": "short_code",
+      "value": "abc123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/health",
+            "description": "Returns service status. Useful for verifying the Worker is reachable."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"URL Shortener API\",\n  \"status\": \"ok\",\n  \"version\": \"0.1.0\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Links",
+      "item": [
+        {
+          "name": "Shorten URL",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/shorten",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://cloudflare.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Creates a short URL. Optionally include `custom_code` (3–20 chars, letters/numbers/hyphens/underscores) to choose your own slug."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"short_code\": \"abc123\",\n  \"short_url\": \"https://your-worker.workers.dev/abc123\",\n  \"original_url\": \"https://cloudflare.com\"\n}"
+            },
+            {
+              "name": "409 Conflict — custom code taken",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Short code already exists\",\n  \"code\": \"CODE_CONFLICT\"\n}"
+            },
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Validation error\",\n  \"code\": \"VALIDATION_ERROR\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Shorten URL (custom code)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/shorten",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://cloudflare.com\",\n  \"custom_code\": \"cf-docs\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Shorten with a user-defined short code."
+          },
+          "response": []
+        },
+        {
+          "name": "Redirect",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/{{short_code}}",
+            "description": "Follows the 302 redirect to the original URL and increments `click_count` in D1.\n\nNote: Postman follows redirects automatically. To see the raw 302 response, disable redirect following in Postman settings."
+          },
+          "response": [
+            {
+              "name": "302 Found",
+              "status": "Found",
+              "code": 302,
+              "header": [{ "key": "Location", "value": "https://cloudflare.com" }],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Short code not found\",\n  \"code\": \"NOT_FOUND\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/stats/{{short_code}}",
+            "description": "Returns click count and metadata for a short code."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"short_code\": \"abc123\",\n  \"original_url\": \"https://cloudflare.com\",\n  \"click_count\": 14,\n  \"created_at\": \"2026-03-22T10:00:00.000Z\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Short code not found\",\n  \"code\": \"NOT_FOUND\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Link",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/links/{{short_code}}",
+            "description": "Permanently deletes a short link from D1."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Short code not found\",\n  \"code\": \"NOT_FOUND\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

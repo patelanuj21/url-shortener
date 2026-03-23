@@ -14,7 +14,7 @@ export const ShortenRequestSchema = z.object({
 
 export const ShortenResponseSchema = z.object({
   short_code: z.string().openapi({ example: 'abc123' }),
-  short_url: z.string().url().openapi({ example: 'https://url-shortener.demos.anujpatel.net/abc123' }),
+  short_url: z.string().url().openapi({ example: 'https://your-worker.workers.dev/abc123' }),
   original_url: z.string().url().openapi({ example: 'https://cloudflare.com' }),
 })
 

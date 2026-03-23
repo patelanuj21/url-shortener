@@ -2,6 +2,10 @@
 
 A serverless URL shortener built on Cloudflare's developer platform. Create short links, track usage, and handle redirects at the edge using Cloudflare Workers (TypeScript) and D1 (SQLite). A React frontend is served directly from the same Worker using Workers Assets — no separate hosting required.
 
+**Live demo:** https://url-shortener.demos.anujpatel.net
+**API docs:** https://url-shortener.demos.anujpatel.net/api/docs
+**Postman collection:** [url-shortener.postman_collection.json](frontend/public/url-shortener.postman_collection.json)
+
 ## Architecture
 
 ```
@@ -19,6 +23,7 @@ Browser
               GET    /:code             →  302 redirect + increment click_count in D1
               GET    /api/stats/:code   →  click count + metadata from D1
               DELETE /api/links/:code   →  remove record from D1
+              GET    /api/health        →  service health check
               GET    /api/docs          →  interactive Swagger UI
               GET    /api/openapi.json  →  OpenAPI 3.0 spec
                     │
@@ -91,7 +96,7 @@ Response `201`:
 ```json
 {
   "short_code": "abc123",
-  "short_url": "https://url-shortener.YOUR_SUBDOMAIN.workers.dev/abc123",
+  "short_url": "https://url-shortener.demos.anujpatel.net/abc123",
   "original_url": "https://cloudflare.com"
 }
 ```
@@ -131,6 +136,17 @@ curl -X DELETE http://localhost:8787/api/links/abc123
 ```
 
 Response: `204 No Content`
+
+### GET /api/health
+
+```bash
+curl http://localhost:8787/api/health
+```
+
+Response `200`:
+```json
+{ "message": "URL Shortener API", "status": "ok", "version": "0.1.0" }
+```
 
 ## Error Responses
 
@@ -185,6 +201,44 @@ wrangler tail --format=json | grep VALIDATION_ERROR
 | Frontend shows blank page | Assets not built | Run `cd frontend && npm run build` before `wrangler dev` |
 | Worker not updating after deploy | CF cache | Wait ~30s or check `wrangler deployments list` |
 | D1 returns empty locally | Schema not applied locally | `wrangler d1 execute url-shortener-db --local --file=schema.sql` |
+
+## Forking / Custom Domain
+
+To deploy your own instance, only two values in `wrangler.toml` are domain-specific:
+
+| Field | Location | What to change |
+|---|---|---|
+| `WORKER_URL` | `[vars]` | Your Worker's public URL (e.g. `https://url-shortener.yourdomain.com`) |
+| `pattern` | `[[routes]]` | Your custom domain (e.g. `url-shortener.yourdomain.com`) |
+
+Everything else — the Worker code, frontend, D1 schema, CI/CD — works without modification.
+
+### Steps
+
+```bash
+# 1. Clone and install
+git clone https://github.com/YOUR_USERNAME/url-shortener.git
+cd url-shortener
+npm install && cd frontend && npm install && cd ..
+
+# 2. Create your D1 database — copy the database_id into wrangler.toml
+wrangler d1 create url-shortener-db
+
+# 3. Update wrangler.toml
+#    WORKER_URL = "https://your-worker-url"
+#    pattern    = "your-custom-domain.com"   (or remove [[routes]] to use workers.dev)
+
+# 4. Apply schema, build frontend, deploy
+wrangler d1 execute url-shortener-db --local --file=schema.sql
+cd frontend && npm run build && cd ..
+wrangler deploy
+```
+
+If your custom domain is on Cloudflare, the `[[routes]]` block in `wrangler.toml` registers it automatically on `wrangler deploy`. If it's not on Cloudflare, omit `[[routes]]` — the Worker will be available at `https://url-shortener.<your-subdomain>.workers.dev`.
+
+### Changing domains later
+
+Same two fields. Update `WORKER_URL` + `pattern` in `wrangler.toml`, then `wrangler deploy`. No code changes required.
 
 ## Deployment
 
