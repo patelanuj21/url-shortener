@@ -2,6 +2,9 @@ import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
 import { requestLogger } from './middleware/logger'
 import { registerShorten } from './handlers/shorten'
+import { registerRedirect } from './handlers/redirect'
+import { registerStats } from './handlers/stats'
+import { registerDeleteLink } from './handlers/deleteLink'
 
 type Bindings = {
   DB: D1Database
@@ -13,6 +16,9 @@ const app = new OpenAPIHono<{ Bindings: Bindings }>()
 app.use('*', requestLogger())
 
 registerShorten(app)
+registerStats(app)
+registerDeleteLink(app)
+registerRedirect(app)
 
 // Health check
 app.get('/api/health', (c) => {
