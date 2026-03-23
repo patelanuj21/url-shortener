@@ -1,5 +1,6 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { swaggerUI } from '@hono/swagger-ui'
+import { requestLogger } from './middleware/logger'
 
 type Bindings = {
   DB: D1Database
@@ -7,6 +8,8 @@ type Bindings = {
 }
 
 const app = new OpenAPIHono<{ Bindings: Bindings }>()
+
+app.use('*', requestLogger())
 
 // Health check
 app.get('/api/health', (c) => {
